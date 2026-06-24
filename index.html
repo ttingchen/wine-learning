@@ -1,0 +1,1206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wine Explorer — Interactive Study Guide</title>
+<style>
+  :root {
+    --wine-dark: #2c1810;
+    --wine-red: #722f37;
+    --wine-light: #f5e6d3;
+    --wine-gold: #c9a959;
+    --wine-cream: #faf6f0;
+    --wine-rose: #e8a0b4;
+    --wine-white: #f0e68c;
+    --radius: 12px;
+    --shadow: 0 4px 20px rgba(44,24,16,0.12);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Georgia', 'Times New Roman', serif;
+    background: var(--wine-cream);
+    color: var(--wine-dark);
+    min-height: 100vh;
+  }
+
+  header {
+    background: linear-gradient(135deg, var(--wine-dark), var(--wine-red));
+    color: var(--wine-light);
+    padding: 2rem;
+    text-align: center;
+  }
+
+  header h1 {
+    font-size: 2.2rem;
+    margin-bottom: 0.3rem;
+    letter-spacing: 1px;
+  }
+
+  header p {
+    opacity: 0.8;
+    font-size: 1rem;
+    font-style: italic;
+  }
+
+  nav {
+    display: flex;
+    justify-content: center;
+    gap: 0;
+    background: var(--wine-dark);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+  }
+
+  nav button {
+    background: none;
+    border: none;
+    color: var(--wine-light);
+    padding: 1rem 1.8rem;
+    font-family: inherit;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.3s;
+    border-bottom: 3px solid transparent;
+    opacity: 0.7;
+  }
+
+  nav button:hover { opacity: 1; background: rgba(255,255,255,0.05); }
+  nav button.active {
+    opacity: 1;
+    border-bottom-color: var(--wine-gold);
+    background: rgba(255,255,255,0.08);
+  }
+
+  main { max-width: 1100px; margin: 0 auto; padding: 2rem 1.5rem; }
+
+  .section { display: none; }
+  .section.active { display: block; }
+
+  /* ── Explorer ── */
+  .sliders-panel {
+    display: block;
+    background: white;
+    border-radius: var(--radius);
+    padding: 1.8rem;
+    box-shadow: var(--shadow);
+    margin-bottom: 2rem;
+  }
+
+  .sliders-controls {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem 2rem;
+  }
+
+  .results-panel {
+    display: block;
+  }
+
+  @media (min-width: 900px) {
+    #explorer.section.active {
+      display: flex !important;
+      gap: 2rem;
+      align-items: flex-start;
+    }
+
+    .sliders-panel {
+      position: sticky;
+      top: 60px;
+      width: 300px;
+      min-width: 300px;
+      flex-shrink: 0;
+      margin-bottom: 0;
+      max-height: calc(100vh - 80px);
+      overflow-y: auto;
+    }
+
+    .results-panel {
+      flex: 1;
+      min-width: 0;
+    }
+  }
+
+  .sliders-panel h3 {
+    margin-bottom: 1.2rem;
+    color: var(--wine-red);
+    font-size: 1.1rem;
+  }
+
+  .slider-group {
+    margin-bottom: 0;
+  }
+
+  .slider-group label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.9rem;
+    margin-bottom: 0.4rem;
+    font-weight: bold;
+  }
+
+  .slider-group label span {
+    font-weight: normal;
+    color: var(--wine-red);
+    font-size: 0.85rem;
+  }
+
+  .slider-group input[type="range"] {
+    width: 100%;
+    -webkit-appearance: none;
+    height: 6px;
+    border-radius: 3px;
+    background: linear-gradient(to right, var(--wine-light), var(--wine-red));
+    outline: none;
+  }
+
+  .slider-group input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--wine-gold);
+    cursor: pointer;
+    border: 2px solid white;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+  }
+
+  .slider-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.7rem;
+    color: #999;
+    margin-top: 2px;
+  }
+
+  .slider-group select {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-family: inherit;
+    font-size: 0.9rem;
+    background: white;
+  }
+
+  .reset-btn {
+    width: 100%;
+    padding: 0.7rem;
+    background: var(--wine-light);
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-family: inherit;
+    cursor: pointer;
+    font-size: 0.9rem;
+    margin-top: 0.5rem;
+    transition: all 0.2s;
+  }
+
+  .reset-btn:hover { background: #e8d5bc; }
+
+  .results-panel h3 {
+    margin-bottom: 1rem;
+    color: var(--wine-red);
+  }
+
+  .wine-results {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(280px, 100%), 1fr));
+    gap: 1rem;
+  }
+
+  .wine-card-result {
+    background: white;
+    border-radius: var(--radius);
+    padding: 1.2rem;
+    box-shadow: var(--shadow);
+    transition: all 0.3s;
+    border-left: 4px solid var(--wine-gold);
+    opacity: 1;
+  }
+
+  .wine-card-result.dimmed {
+    opacity: 0.3;
+    transform: scale(0.97);
+    border-left-color: #ccc;
+    pointer-events: none;
+  }
+
+  .wine-card-result .wine-name {
+    font-size: 1.1rem;
+    font-weight: bold;
+    color: var(--wine-dark);
+    margin-bottom: 0.2rem;
+  }
+
+  .wine-card-result .wine-country {
+    font-size: 0.8rem;
+    color: var(--wine-red);
+    margin-bottom: 0.6rem;
+  }
+
+  .wine-card-result .wine-attrs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-bottom: 0.6rem;
+  }
+
+  .wine-tag {
+    font-size: 0.72rem;
+    padding: 0.2rem 0.55rem;
+    border-radius: 20px;
+    background: var(--wine-light);
+    color: var(--wine-dark);
+  }
+
+  .wine-tag.match { background: var(--wine-gold); color: white; font-weight: bold; }
+
+  .wine-card-result .wine-flavors {
+    font-size: 0.85rem;
+    color: #666;
+    font-style: italic;
+  }
+
+  .match-score {
+    float: right;
+    background: var(--wine-red);
+    color: white;
+    font-size: 0.75rem;
+    padding: 0.15rem 0.5rem;
+    border-radius: 10px;
+    font-weight: bold;
+  }
+
+  .match-score.perfect { background: #2d7a3a; }
+  .match-score.good { background: var(--wine-gold); }
+
+  /* ── Flashcards ── */
+  .flashcard-controls {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+  }
+
+  .filter-btn {
+    padding: 0.5rem 1.2rem;
+    border: 2px solid var(--wine-red);
+    background: white;
+    color: var(--wine-red);
+    border-radius: 25px;
+    font-family: inherit;
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: all 0.2s;
+  }
+
+  .filter-btn:hover, .filter-btn.active {
+    background: var(--wine-red);
+    color: white;
+  }
+
+  .flashcard-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .flashcard {
+    width: 100%;
+    max-width: 500px;
+    height: 340px;
+    perspective: 1000px;
+    cursor: pointer;
+    margin-bottom: 1.5rem;
+  }
+
+  .flashcard-inner {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    transition: transform 0.6s;
+    transform-style: preserve-3d;
+  }
+
+  .flashcard.flipped .flashcard-inner {
+    transform: rotateY(180deg);
+  }
+
+  .flashcard-front, .flashcard-back {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    backface-visibility: hidden;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    text-align: center;
+  }
+
+  .flashcard-front {
+    background: linear-gradient(135deg, var(--wine-dark), var(--wine-red));
+    color: var(--wine-light);
+  }
+
+  .flashcard-front h2 { font-size: 2rem; margin-bottom: 0.5rem; }
+  .flashcard-front .country-label { font-size: 1rem; opacity: 0.7; }
+  .flashcard-front .flip-hint { font-size: 0.8rem; opacity: 0.5; margin-top: 1.5rem; }
+
+  .flashcard-back {
+    background: white;
+    transform: rotateY(180deg);
+    align-items: flex-start;
+    justify-content: flex-start;
+    overflow-y: auto;
+  }
+
+  .flashcard-back h3 {
+    color: var(--wine-red);
+    margin-bottom: 1rem;
+    font-size: 1.3rem;
+    width: 100%;
+    text-align: center;
+  }
+
+  .flashcard-back table {
+    width: 100%;
+    font-size: 0.9rem;
+    border-collapse: collapse;
+  }
+
+  .flashcard-back td {
+    padding: 0.4rem 0.3rem;
+    border-bottom: 1px solid #eee;
+    vertical-align: top;
+  }
+
+  .flashcard-back td:first-child {
+    font-weight: bold;
+    color: var(--wine-red);
+    width: 35%;
+  }
+
+  .card-nav {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+  }
+
+  .card-nav button {
+    padding: 0.7rem 1.5rem;
+    background: var(--wine-red);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+
+  .card-nav button:hover { background: var(--wine-dark); }
+  .card-nav button:disabled { opacity: 0.3; cursor: default; }
+
+  .card-counter {
+    font-size: 0.95rem;
+    color: #888;
+    min-width: 60px;
+    text-align: center;
+  }
+
+  /* ── Quiz ── */
+  .quiz-container {
+    max-width: 650px;
+    margin: 0 auto;
+  }
+
+  .quiz-progress {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 1.5rem;
+  }
+
+  .quiz-progress .dot {
+    flex: 1;
+    height: 6px;
+    border-radius: 3px;
+    background: #ddd;
+    transition: background 0.3s;
+  }
+
+  .quiz-progress .dot.correct { background: #2d7a3a; }
+  .quiz-progress .dot.wrong { background: #c0392b; }
+  .quiz-progress .dot.current { background: var(--wine-gold); }
+
+  .quiz-question-card {
+    background: white;
+    border-radius: var(--radius);
+    padding: 2rem;
+    box-shadow: var(--shadow);
+    margin-bottom: 1.5rem;
+  }
+
+  .quiz-question-card h3 {
+    color: var(--wine-red);
+    margin-bottom: 0.5rem;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  .quiz-question-card p {
+    font-size: 1.2rem;
+    margin-bottom: 1.5rem;
+    line-height: 1.5;
+  }
+
+  .quiz-options {
+    display: flex;
+    flex-direction: column;
+    gap: 0.7rem;
+  }
+
+  .quiz-option {
+    padding: 1rem 1.2rem;
+    border: 2px solid #e0d5c8;
+    border-radius: 10px;
+    background: white;
+    font-family: inherit;
+    font-size: 1rem;
+    cursor: pointer;
+    text-align: left;
+    transition: all 0.2s;
+  }
+
+  .quiz-option:hover:not(.selected) {
+    border-color: var(--wine-gold);
+    background: #fdf8f0;
+  }
+
+  .quiz-option.selected.correct {
+    border-color: #2d7a3a;
+    background: #e8f5e9;
+    color: #2d7a3a;
+    font-weight: bold;
+  }
+
+  .quiz-option.selected.wrong {
+    border-color: #c0392b;
+    background: #fce8e6;
+    color: #c0392b;
+  }
+
+  .quiz-option.reveal-correct {
+    border-color: #2d7a3a;
+    background: #e8f5e9;
+  }
+
+  .quiz-option.disabled { pointer-events: none; }
+
+  .quiz-feedback {
+    margin-top: 1rem;
+    padding: 1rem;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    display: none;
+  }
+
+  .quiz-feedback.show { display: block; }
+  .quiz-feedback.correct { background: #e8f5e9; color: #2d7a3a; }
+  .quiz-feedback.wrong { background: #fce8e6; color: #c0392b; }
+
+  .quiz-next-btn {
+    display: none;
+    margin: 1.5rem auto 0;
+    padding: 0.8rem 2rem;
+    background: var(--wine-red);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 1rem;
+    cursor: pointer;
+  }
+
+  .quiz-next-btn.show { display: block; }
+  .quiz-next-btn:hover { background: var(--wine-dark); }
+
+  .quiz-score {
+    text-align: center;
+    background: white;
+    padding: 3rem 2rem;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+  }
+
+  .quiz-score h2 { color: var(--wine-red); font-size: 2rem; margin-bottom: 1rem; }
+  .quiz-score .score-number { font-size: 4rem; color: var(--wine-gold); font-weight: bold; }
+  .quiz-score p { font-size: 1.1rem; margin: 1rem 0; color: #666; }
+
+  .quiz-restart {
+    margin-top: 1.5rem;
+    padding: 0.8rem 2.5rem;
+    background: var(--wine-red);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 1.1rem;
+    cursor: pointer;
+  }
+
+  /* ── Cheat Sheet ── */
+  .cheatsheet-section {
+    margin-bottom: 2rem;
+  }
+
+  .cheatsheet-section h3 {
+    color: var(--wine-red);
+    margin-bottom: 0.8rem;
+    font-size: 1.1rem;
+    border-bottom: 2px solid var(--wine-light);
+    padding-bottom: 0.4rem;
+  }
+
+  .cheatsheet-table {
+    width: 100%;
+    background: white;
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: var(--shadow);
+    border-collapse: collapse;
+  }
+
+  .cheatsheet-table th {
+    background: var(--wine-dark);
+    color: var(--wine-light);
+    padding: 0.7rem 1rem;
+    text-align: left;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .cheatsheet-table td {
+    padding: 0.65rem 1rem;
+    border-bottom: 1px solid #eee;
+    font-size: 0.9rem;
+  }
+
+  .cheatsheet-table tr:last-child td { border-bottom: none; }
+  .cheatsheet-table tr:hover td { background: #fdf8f0; }
+
+  .memory-tips {
+    background: white;
+    border-radius: var(--radius);
+    padding: 1.5rem 2rem;
+    box-shadow: var(--shadow);
+    margin-top: 1.5rem;
+  }
+
+  .memory-tips h3 {
+    color: var(--wine-red);
+    margin-bottom: 1rem;
+  }
+
+  .memory-tips ul {
+    list-style: none;
+    padding: 0;
+  }
+
+  .memory-tips li {
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #f0e8dc;
+    font-size: 0.95rem;
+    line-height: 1.5;
+  }
+
+  .memory-tips li:last-child { border-bottom: none; }
+  .memory-tips li strong { color: var(--wine-red); }
+
+  .wine-color-dot {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    margin-right: 4px;
+    vertical-align: middle;
+    border: 1px solid rgba(0,0,0,0.1);
+  }
+
+  .dot-red { background: var(--wine-red); }
+  .dot-white { background: var(--wine-white); }
+  .dot-rose { background: var(--wine-rose); }
+  .dot-sparkling { background: linear-gradient(135deg, var(--wine-white), #fff); border: 1px solid #ccc; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Wine Explorer</h1>
+  <p>An interactive guide to notable wines</p>
+</header>
+
+<nav>
+  <button class="active" onclick="showSection('explorer', this)">Wine Finder</button>
+  <button onclick="showSection('flashcards', this)">Flashcards</button>
+  <button onclick="showSection('quiz', this)">Quiz</button>
+  <button onclick="showSection('cheatsheet', this)">Cheat Sheet</button>
+</nav>
+
+<main>
+  <!-- ═══════ EXPLORER ═══════ -->
+  <div id="explorer" class="section active">
+      <div class="sliders-panel">
+        <h3>Adjust Wine Profile</h3>
+        <div class="sliders-controls">
+          <div class="slider-group">
+            <label>Sweetness <span id="sweetnessVal">Any</span></label>
+            <input type="range" id="sweetness" min="0" max="3" value="0" oninput="updateExplorer()">
+            <div class="slider-labels"><span>Any</span><span>Dry</span><span>Medium</span><span>Sweet</span></div>
+          </div>
+
+          <div class="slider-group">
+            <label>Body <span id="bodyVal">Any</span></label>
+            <input type="range" id="body" min="0" max="3" value="0" oninput="updateExplorer()">
+            <div class="slider-labels"><span>Any</span><span>Light</span><span>Medium</span><span>Full</span></div>
+          </div>
+
+          <div class="slider-group">
+            <label>Tannins <span id="tanninsVal">Any</span></label>
+            <input type="range" id="tannins" min="0" max="3" value="0" oninput="updateExplorer()">
+            <div class="slider-labels"><span>Any</span><span>Low</span><span>Medium</span><span>High</span></div>
+          </div>
+
+          <div class="slider-group">
+            <label>Acidity <span id="acidityVal">Any</span></label>
+            <input type="range" id="acidity" min="0" max="3" value="0" oninput="updateExplorer()">
+            <div class="slider-labels"><span>Any</span><span>Low</span><span>Medium</span><span>High</span></div>
+          </div>
+
+          <div class="slider-group">
+            <label>Alcohol <span id="alcoholVal">Any</span></label>
+            <input type="range" id="alcohol" min="0" max="3" value="0" oninput="updateExplorer()">
+            <div class="slider-labels"><span>Any</span><span>Low</span><span>Medium</span><span>High</span></div>
+          </div>
+
+          <div class="slider-group">
+            <label>Type</label>
+            <select id="typeFilter" onchange="updateExplorer()">
+              <option value="all">All Types</option>
+              <option value="red">Red</option>
+              <option value="white">White</option>
+              <option value="rose">Rosé</option>
+              <option value="sparkling">Sparkling</option>
+              <option value="fortified">Fortified</option>
+            </select>
+          </div>
+
+          <div class="slider-group">
+            <label>Oak</label>
+            <select id="oakFilter" onchange="updateExplorer()">
+              <option value="all">Any</option>
+              <option value="oaked">Oaked</option>
+              <option value="unoaked">Unoaked</option>
+            </select>
+          </div>
+        </div>
+        <button class="reset-btn" onclick="resetSliders()">Reset All</button>
+      </div>
+
+      <div class="results-panel">
+        <h3 id="resultsHeading">All Wines (13)</h3>
+        <div class="wine-results" id="wineResults"></div>
+      </div>
+  </div>
+
+  <!-- ═══════ FLASHCARDS ═══════ -->
+  <div id="flashcards" class="section">
+    <div class="flashcard-controls">
+      <button class="filter-btn active" onclick="filterCards('all', this)">All</button>
+      <button class="filter-btn" onclick="filterCards('France', this)">France</button>
+      <button class="filter-btn" onclick="filterCards('Italy', this)">Italy</button>
+      <button class="filter-btn" onclick="filterCards('Spain', this)">Spain</button>
+      <button class="filter-btn" onclick="filterCards('Portugal', this)">Portugal</button>
+      <button class="filter-btn" onclick="filterCards('California', this)">California</button>
+    </div>
+    <div class="flashcard-container">
+      <div class="flashcard" id="flashcard" onclick="flipCard()">
+        <div class="flashcard-inner" id="flashcardInner">
+          <div class="flashcard-front" id="cardFront">
+            <h2 id="cardName"></h2>
+            <div class="country-label" id="cardCountry"></div>
+            <div class="flip-hint">Click to reveal</div>
+          </div>
+          <div class="flashcard-back" id="cardBack"></div>
+        </div>
+      </div>
+      <div class="card-nav">
+        <button onclick="prevCard()" id="prevBtn">Previous</button>
+        <span class="card-counter" id="cardCounter">1 / 13</span>
+        <button onclick="nextCard()" id="nextBtn">Next</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════ QUIZ ═══════ -->
+  <div id="quiz" class="section">
+    <div class="quiz-container">
+      <div class="quiz-progress" id="quizProgress"></div>
+      <div id="quizContent"></div>
+    </div>
+  </div>
+
+  <!-- ═══════ CHEAT SHEET ═══════ -->
+  <div id="cheatsheet" class="section">
+    <div class="cheatsheet-section">
+      <h3>Red Wines (Light to Full Body)</h3>
+      <table class="cheatsheet-table" id="redTable"></table>
+    </div>
+    <div class="cheatsheet-section">
+      <h3>Sparkling Wines</h3>
+      <table class="cheatsheet-table" id="sparklingTable"></table>
+    </div>
+    <div class="cheatsheet-section">
+      <h3>Fortified Wines</h3>
+      <table class="cheatsheet-table" id="fortifiedTable"></table>
+    </div>
+    <div class="cheatsheet-section">
+      <h3>White &amp; Rosé</h3>
+      <table class="cheatsheet-table" id="otherTable"></table>
+    </div>
+    <div class="memory-tips">
+      <h3>Memory Tips</h3>
+      <ul>
+        <li><strong>Two fortified wines:</strong> Sherry (Spain, white, varies in sweetness) vs Port (Portugal, red, always sweet)</li>
+        <li><strong>Two sparklings:</strong> Prosecco (Italy, pear/floral) vs Cava (Spain, apple/lemon)</li>
+        <li><strong>Clove = oak:</strong> Both Chianti and Châteauneuf-du-Pape get clove aromas from oak aging</li>
+        <li><strong>Vanilla = oak:</strong> Both Sauternes and Rioja get vanilla from oak aging</li>
+        <li><strong>White pepper:</strong> Côtes du Rhône's unique identifier among these wines</li>
+        <li><strong>Only sweet still wines:</strong> Sauternes (white) and White Zinfandel (rosé)</li>
+        <li><strong>"White" Zinfandel:</strong> Not white at all — it's a rosé!</li>
+      </ul>
+    </div>
+  </div>
+</main>
+
+<script>
+const wines = [
+  {
+    name: "Beaujolais", country: "France", color: "red",
+    type: "red", body: 1, sweetness: 1, tannins: 1, acidity: 2, alcohol: 2,
+    oak: "unoaked", flavors: "Raspberry, red cherry",
+    note: "Light & fresh — the easy-drinking French red"
+  },
+  {
+    name: "Côtes du Rhône", country: "France", color: "red",
+    type: "red", body: 2, sweetness: 1, tannins: 2, acidity: 2, alcohol: 2,
+    oak: "varies", flavors: "Strawberry, red plum, white pepper",
+    note: "The peppery note sets it apart"
+  },
+  {
+    name: "Châteauneuf-du-Pape", country: "France", color: "red",
+    type: "red", body: 3, sweetness: 1, tannins: 2, acidity: 2, alcohol: 3,
+    oak: "oaked", flavors: "Strawberry, clove",
+    note: "Full, bold, high alcohol — 'Pope's new castle'"
+  },
+  {
+    name: "Sauternes", country: "France", color: "white",
+    type: "white", body: 3, sweetness: 3, tannins: 0, acidity: 3, alcohol: 2,
+    oak: "oaked", flavors: "Apricot, honey, vanilla",
+    note: "Luxurious sweet white from Bordeaux"
+  },
+  {
+    name: "Prosecco", country: "Italy", color: "sparkling",
+    type: "sparkling", body: 1, sweetness: 1.5, tannins: 0, acidity: 2, alcohol: 2,
+    oak: "unoaked", flavors: "Pear, floral aromas",
+    note: "Italy's bubbly — light, floral, crowd-pleaser"
+  },
+  {
+    name: "Chianti", country: "Italy", color: "red",
+    type: "red", body: 2, sweetness: 1, tannins: 3, acidity: 3, alcohol: 2,
+    oak: "oaked", flavors: "Red cherry, red plum, clove",
+    note: "High tannin + high acidity = classic Italian food wine"
+  },
+  {
+    name: "Cava", country: "Spain", color: "sparkling",
+    type: "sparkling", body: 1, sweetness: 1, tannins: 0, acidity: 2, alcohol: 2,
+    oak: "unoaked", flavors: "Apple, lemon",
+    note: "Spain's sparkling — crisp, citrusy"
+  },
+  {
+    name: "Rioja", country: "Spain", color: "red",
+    type: "red", body: 2.5, sweetness: 1, tannins: 2, acidity: 2, alcohol: 2,
+    oak: "oaked", flavors: "Strawberry, vanilla",
+    note: "Spain's signature red — strawberry + vanilla"
+  },
+  {
+    name: "Sherry", country: "Spain", color: "white",
+    type: "fortified", body: 2, sweetness: 2, tannins: 0, acidity: 2, alcohol: 3,
+    oak: "oaked", flavors: "Varies by style",
+    note: "Fortified + versatile — comes in every sweetness level"
+  },
+  {
+    name: "Port", country: "Portugal", color: "red",
+    type: "fortified", body: 3, sweetness: 3, tannins: 3, acidity: 2, alcohol: 3,
+    oak: "oaked", flavors: "Blackberry",
+    note: "Sweet, strong, dark — the dessert powerhouse"
+  },
+  {
+    name: "White Zinfandel", country: "California", color: "rose",
+    type: "rose", body: 1, sweetness: 2, tannins: 0, acidity: 2, alcohol: 1,
+    oak: "unoaked", flavors: "Strawberry, raspberry",
+    note: "Not white — it's a rosé! Low alcohol, fruity"
+  }
+];
+
+const levelLabels = { 0: "Any", 1: "Low", 2: "Medium", 3: "High" };
+const sweetnessLabels = { 0: "Any", 1: "Dry", 2: "Medium", 3: "Sweet" };
+const bodyLabels = { 0: "Any", 1: "Light", 2: "Medium", 3: "Full" };
+
+function colorDot(type) {
+  const cls = { red: 'dot-red', white: 'dot-white', rose: 'dot-rose', sparkling: 'dot-sparkling', fortified: 'dot-red' };
+  return `<span class="wine-color-dot ${cls[type] || 'dot-red'}"></span>`;
+}
+
+// ── Explorer ──
+function updateExplorer() {
+  const s = +document.getElementById('sweetness').value;
+  const b = +document.getElementById('body').value;
+  const t = +document.getElementById('tannins').value;
+  const ac = +document.getElementById('acidity').value;
+  const al = +document.getElementById('alcohol').value;
+  const typeF = document.getElementById('typeFilter').value;
+  const oakF = document.getElementById('oakFilter').value;
+
+  document.getElementById('sweetnessVal').textContent = sweetnessLabels[s];
+  document.getElementById('bodyVal').textContent = bodyLabels[b];
+  document.getElementById('tanninsVal').textContent = levelLabels[t];
+  document.getElementById('acidityVal').textContent = levelLabels[ac];
+  document.getElementById('alcoholVal').textContent = levelLabels[al];
+
+  const anySliderSet = s || b || t || ac || al;
+
+  const scored = wines.map(w => {
+    let matchCount = 0;
+    let totalChecked = 0;
+    let typeMatch = true;
+    let oakMatch = true;
+
+    if (typeF !== 'all') {
+      typeMatch = w.type === typeF;
+    }
+    if (oakF !== 'all') {
+      oakMatch = w.oak === oakF || w.oak === 'varies';
+    }
+
+    if (s > 0) { totalChecked++; if (Math.abs(w.sweetness - s) <= 0.5) matchCount++; }
+    if (b > 0) { totalChecked++; if (Math.abs(w.body - b) <= 0.5) matchCount++; }
+    if (t > 0) { totalChecked++; if (w.tannins === 0 && t === 1 || Math.abs(w.tannins - t) <= 0.5) matchCount++; }
+    if (ac > 0) { totalChecked++; if (Math.abs(w.acidity - ac) <= 0.5) matchCount++; }
+    if (al > 0) { totalChecked++; if (Math.abs(w.alcohol - al) <= 0.5) matchCount++; }
+
+    const score = totalChecked > 0 ? matchCount / totalChecked : 1;
+    return { ...w, score, matchCount, totalChecked, typeMatch, oakMatch };
+  });
+
+  scored.sort((a, b) => b.score - a.score || b.matchCount - a.matchCount);
+
+  const container = document.getElementById('wineResults');
+  let matchingCount = 0;
+
+  container.innerHTML = scored.map(w => {
+    const filtered = !w.typeMatch || !w.oakMatch;
+    if (filtered) return '';
+
+    const isMatch = !anySliderSet || w.score >= 0.5;
+    if (isMatch) matchingCount++;
+
+    let scoreBadge = '';
+    if (anySliderSet && w.totalChecked > 0) {
+      const pct = Math.round(w.score * 100);
+      const cls = pct === 100 ? 'perfect' : pct >= 60 ? 'good' : '';
+      scoreBadge = `<span class="match-score ${cls}">${pct}% match</span>`;
+    }
+
+    const tags = [];
+    if (s > 0) tags.push({ label: sweetnessLabels[Math.round(w.sweetness)] || 'Dry', match: Math.abs(w.sweetness - s) <= 0.5 });
+    else tags.push({ label: sweetnessLabels[Math.round(w.sweetness)] || 'Dry', match: false });
+
+    if (b > 0) tags.push({ label: bodyLabels[Math.round(w.body)] + ' body', match: Math.abs(w.body - b) <= 0.5 });
+    else tags.push({ label: bodyLabels[Math.round(w.body)] + ' body', match: false });
+
+    if (w.tannins > 0) {
+      if (t > 0) tags.push({ label: levelLabels[w.tannins] + ' tannin', match: Math.abs(w.tannins - t) <= 0.5 });
+      else tags.push({ label: levelLabels[w.tannins] + ' tannin', match: false });
+    }
+
+    if (ac > 0) tags.push({ label: levelLabels[w.acidity] + ' acidity', match: Math.abs(w.acidity - ac) <= 0.5 });
+    if (al > 0) tags.push({ label: levelLabels[w.alcohol] + ' alcohol', match: Math.abs(w.alcohol - al) <= 0.5 });
+
+    const oakLabel = w.oak === 'varies' ? 'Oaked/Unoaked' : w.oak.charAt(0).toUpperCase() + w.oak.slice(1);
+    const oakMatch = oakF !== 'all' && (w.oak === oakF || w.oak === 'varies');
+    tags.push({ label: oakLabel, match: oakMatch });
+
+    return `
+      <div class="wine-card-result ${isMatch ? '' : 'dimmed'}">
+        ${scoreBadge}
+        <div class="wine-name">${colorDot(w.type)} ${w.name}</div>
+        <div class="wine-country">${w.country}</div>
+        <div class="wine-attrs">
+          ${tags.map(t => `<span class="wine-tag ${t.match ? 'match' : ''}">${t.label}</span>`).join('')}
+        </div>
+        <div class="wine-flavors">${w.flavors}</div>
+      </div>`;
+  }).join('');
+
+  const total = scored.filter(w => w.typeMatch && w.oakMatch).length;
+  document.getElementById('resultsHeading').textContent =
+    anySliderSet ? `${matchingCount} match${matchingCount !== 1 ? 'es' : ''} of ${total} wines` : `All Wines (${total})`;
+}
+
+function resetSliders() {
+  ['sweetness','body','tannins','acidity','alcohol'].forEach(id => document.getElementById(id).value = 0);
+  document.getElementById('typeFilter').value = 'all';
+  document.getElementById('oakFilter').value = 'all';
+  updateExplorer();
+}
+
+// ── Flashcards ──
+let currentCard = 0;
+let filteredWines = [...wines];
+
+function filterCards(filter, btn) {
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  filteredWines = filter === 'all' ? [...wines] : wines.filter(w => w.country === filter);
+  currentCard = 0;
+  renderCard();
+}
+
+function renderCard() {
+  const w = filteredWines[currentCard];
+  if (!w) return;
+  document.getElementById('flashcard').classList.remove('flipped');
+  document.getElementById('cardName').textContent = w.name;
+  document.getElementById('cardCountry').textContent = w.country;
+
+  const oakLabel = w.oak === 'varies' ? 'Can be oaked or unoaked' : w.oak.charAt(0).toUpperCase() + w.oak.slice(1);
+  const typeLabel = w.type.charAt(0).toUpperCase() + w.type.slice(1);
+
+  document.getElementById('cardBack').innerHTML = `
+    <h3>${w.name}</h3>
+    <table>
+      <tr><td>Country</td><td>${w.country}</td></tr>
+      <tr><td>Type</td><td>${colorDot(w.type)} ${typeLabel}</td></tr>
+      <tr><td>Body</td><td>${bodyLabels[Math.round(w.body)]}</td></tr>
+      <tr><td>Sweetness</td><td>${sweetnessLabels[Math.round(w.sweetness)]}</td></tr>
+      ${w.tannins ? `<tr><td>Tannins</td><td>${levelLabels[w.tannins]}</td></tr>` : ''}
+      <tr><td>Acidity</td><td>${levelLabels[w.acidity]}</td></tr>
+      <tr><td>Alcohol</td><td>${levelLabels[w.alcohol]}</td></tr>
+      <tr><td>Oak</td><td>${oakLabel}</td></tr>
+      <tr><td>Flavors</td><td>${w.flavors}</td></tr>
+      <tr><td>Tip</td><td>${w.note}</td></tr>
+    </table>`;
+
+  document.getElementById('cardCounter').textContent = `${currentCard + 1} / ${filteredWines.length}`;
+  document.getElementById('prevBtn').disabled = currentCard === 0;
+  document.getElementById('nextBtn').disabled = currentCard === filteredWines.length - 1;
+}
+
+function flipCard() { document.getElementById('flashcard').classList.toggle('flipped'); }
+function nextCard() { if (currentCard < filteredWines.length - 1) { currentCard++; renderCard(); } }
+function prevCard() { if (currentCard > 0) { currentCard--; renderCard(); } }
+
+// ── Quiz ──
+let quizQuestions = [];
+let currentQuestion = 0;
+let quizScore = 0;
+
+function generateQuestions() {
+  const pool = [];
+
+  wines.forEach(w => {
+    pool.push({
+      q: `What type of wine is ${w.name}?`,
+      correct: w.type.charAt(0).toUpperCase() + w.type.slice(1),
+      options: shuffle(['Red', 'White', 'Sparkling', 'Fortified', 'Rosé'].filter(t => t !== (w.type.charAt(0).toUpperCase() + w.type.slice(1)))).slice(0, 3).concat(w.type.charAt(0).toUpperCase() + w.type.slice(1)),
+      explanation: `${w.name} is a ${w.type} wine from ${w.country}.`
+    });
+
+    pool.push({
+      q: `Which country is ${w.name} from?`,
+      correct: w.country,
+      options: shuffle(['France', 'Italy', 'Spain', 'Portugal', 'California'].filter(c => c !== w.country)).slice(0, 3).concat(w.country),
+      explanation: `${w.name} comes from ${w.country}.`
+    });
+
+    if (w.flavors !== 'Varies by style') {
+      pool.push({
+        q: `What are the key flavors of ${w.name}?`,
+        correct: w.flavors,
+        options: shuffle(wines.filter(x => x.name !== w.name && x.flavors !== 'Varies by style').map(x => x.flavors)).slice(0, 3).concat(w.flavors),
+        explanation: `${w.name} is known for: ${w.flavors}.`
+      });
+    }
+
+    pool.push({
+      q: `What is the body of ${w.name}?`,
+      correct: bodyLabels[Math.round(w.body)],
+      options: shuffle(['Light', 'Medium', 'Full'].filter(b => b !== bodyLabels[Math.round(w.body)])).concat(bodyLabels[Math.round(w.body)]),
+      explanation: `${w.name} has a ${bodyLabels[Math.round(w.body)].toLowerCase()} body.`
+    });
+  });
+
+  quizQuestions = shuffle(pool).slice(0, 10);
+  quizQuestions.forEach(q => q.options = shuffle(q.options));
+}
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function renderQuiz() {
+  if (currentQuestion >= quizQuestions.length) {
+    renderQuizScore();
+    return;
+  }
+
+  const q = quizQuestions[currentQuestion];
+  const progress = document.getElementById('quizProgress');
+  progress.innerHTML = quizQuestions.map((_, i) => {
+    let cls = '';
+    if (i < currentQuestion) cls = quizQuestions[i].answeredCorrectly ? 'correct' : 'wrong';
+    else if (i === currentQuestion) cls = 'current';
+    return `<div class="dot ${cls}"></div>`;
+  }).join('');
+
+  document.getElementById('quizContent').innerHTML = `
+    <div class="quiz-question-card">
+      <h3>Question ${currentQuestion + 1} of ${quizQuestions.length}</h3>
+      <p>${q.q}</p>
+      <div class="quiz-options">
+        ${q.options.map((opt, i) => `
+          <button class="quiz-option" onclick="answerQuiz(${i})">${opt}</button>
+        `).join('')}
+      </div>
+      <div class="quiz-feedback" id="quizFeedback"></div>
+    </div>
+    <button class="quiz-next-btn" id="quizNextBtn" onclick="nextQuestion()">
+      ${currentQuestion === quizQuestions.length - 1 ? 'See Results' : 'Next Question'}
+    </button>`;
+}
+
+function answerQuiz(idx) {
+  const q = quizQuestions[currentQuestion];
+  const buttons = document.querySelectorAll('.quiz-option');
+  const selected = buttons[idx];
+  const isCorrect = selected.textContent.trim() === q.correct;
+
+  q.answeredCorrectly = isCorrect;
+  if (isCorrect) quizScore++;
+
+  buttons.forEach((btn, i) => {
+    btn.classList.add('disabled');
+    if (btn.textContent.trim() === q.correct) btn.classList.add('selected', 'correct');
+    if (i === idx && !isCorrect) btn.classList.add('selected', 'wrong');
+  });
+
+  const fb = document.getElementById('quizFeedback');
+  fb.className = `quiz-feedback show ${isCorrect ? 'correct' : 'wrong'}`;
+  fb.textContent = isCorrect ? 'Correct!' : `${q.explanation}`;
+
+  document.getElementById('quizNextBtn').classList.add('show');
+}
+
+function nextQuestion() { currentQuestion++; renderQuiz(); }
+
+function renderQuizScore() {
+  const pct = Math.round(quizScore / quizQuestions.length * 100);
+  let msg = pct === 100 ? 'Perfect score! You are a wine expert!' :
+            pct >= 70 ? 'Great job! You know your wines well.' :
+            pct >= 40 ? 'Not bad! Keep studying with the flashcards.' :
+            'Keep learning! Try the flashcards and explorer.';
+
+  document.getElementById('quizContent').innerHTML = `
+    <div class="quiz-score">
+      <h2>Quiz Complete!</h2>
+      <div class="score-number">${quizScore}/${quizQuestions.length}</div>
+      <p>${msg}</p>
+      <button class="quiz-restart" onclick="restartQuiz()">Try Again</button>
+    </div>`;
+}
+
+function restartQuiz() {
+  currentQuestion = 0;
+  quizScore = 0;
+  generateQuestions();
+  renderQuiz();
+}
+
+// ── Cheat Sheet ──
+function renderCheatSheet() {
+  const reds = wines.filter(w => w.type === 'red').sort((a, b) => a.body - b.body);
+  const sparkling = wines.filter(w => w.type === 'sparkling');
+  const fortified = wines.filter(w => w.type === 'fortified');
+  const other = wines.filter(w => ['white', 'rose'].includes(w.type));
+
+  function oakLabel(o) { return o === 'varies' ? 'Oaked/Unoaked' : o.charAt(0).toUpperCase() + o.slice(1); }
+
+  function makeTable(id, rows, headers) {
+    document.getElementById(id).innerHTML = `
+      <tr>${headers.map(h => `<th>${h}</th>`).join('')}</tr>
+      ${rows.map(w => `<tr>
+        <td>${colorDot(w.type)} ${w.name}</td>
+        <td>${w.country}</td>
+        <td>${bodyLabels[Math.round(w.body)]}</td>
+        <td>${sweetnessLabels[Math.round(w.sweetness)]}</td>
+        <td>${oakLabel(w.oak)}</td>
+        <td>${w.flavors}</td>
+        <td>${w.note}</td>
+      </tr>`).join('')}`;
+  }
+
+  const headers = ['Wine', 'Country', 'Body', 'Sweetness', 'Oak', 'Key Flavors', 'Remember'];
+  makeTable('redTable', reds, headers);
+  makeTable('sparklingTable', sparkling, headers);
+  makeTable('fortifiedTable', fortified, headers);
+  makeTable('otherTable', other, headers);
+}
+
+// ── Navigation ──
+function showSection(id, btn) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+
+  if (id === 'quiz' && quizQuestions.length === 0) {
+    generateQuestions();
+    renderQuiz();
+  }
+}
+
+// ── Init ──
+updateExplorer();
+renderCard();
+renderCheatSheet();
+</script>
+
+</body>
+</html>
