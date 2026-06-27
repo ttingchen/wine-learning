@@ -799,67 +799,103 @@ const wines = [
   {
     name: "Beaujolais", country: "France", color: "red",
     type: "red", body: 1, sweetness: 1, tannins: 1, acidity: 2, alcohol: 2,
-    oak: "unoaked", flavors: "Raspberry, red cherry",
+    oak: "unoaked", grape: "Gamay", flavors: "Raspberry, red cherry",
     note: "Light & fresh — the easy-drinking French red"
   },
   {
     name: "Côtes du Rhône", country: "France", color: "red",
     type: "red", body: 2, sweetness: 1, tannins: 2, acidity: 2, alcohol: 2,
-    oak: "varies", flavors: "Strawberry, red plum, white pepper",
+    oak: "varies", grape: "Grenache, Syrah, Mourvèdre", flavors: "Strawberry, red plum, white pepper",
     note: "The peppery note sets it apart"
   },
   {
     name: "Châteauneuf-du-Pape", country: "France", color: "red",
     type: "red", body: 3, sweetness: 1, tannins: 2, acidity: 2, alcohol: 3,
-    oak: "oaked", flavors: "Strawberry, clove",
+    oak: "oaked", grape: "Grenache-based blend", flavors: "Strawberry, clove",
     note: "Full, bold, high alcohol — 'Pope's new castle'"
   },
   {
     name: "Sauternes", country: "France", color: "white",
     type: "white", body: 3, sweetness: 3, tannins: 0, acidity: 3, alcohol: 2,
-    oak: "oaked", flavors: "Apricot, honey, vanilla",
+    oak: "oaked", grape: "Sémillon & Sauvignon Blanc", flavors: "Apricot, honey, vanilla",
     note: "Luxurious sweet white from Bordeaux"
+  },
+  {
+    name: "Champagne", country: "France", color: "sparkling",
+    type: "sparkling", body: 2, sweetness: 1, tannins: 0, acidity: 3, alcohol: 2,
+    oak: "unoaked", grape: "Chardonnay & Pinot Noir", flavors: "Apple, lemon, toasted bread",
+    note: "The benchmark sparkling — high acidity, toasty brioche notes"
+  },
+  {
+    name: "Sancerre", country: "France", color: "white",
+    type: "white", body: 2, sweetness: 1, tannins: 0, acidity: 3, alcohol: 2,
+    oak: "unoaked", grape: "Sauvignon Blanc", flavors: "Apple, grassy/herbaceous",
+    note: "Crisp, grassy Sauvignon Blanc with high acidity"
+  },
+  {
+    name: "Chablis", country: "France", color: "white",
+    type: "white", body: 1.5, sweetness: 1, tannins: 0, acidity: 3, alcohol: 2,
+    oak: "unoaked", grape: "Chardonnay", flavors: "Apple, lemon",
+    note: "Unoaked Chardonnay — lean & mineral, high acidity"
+  },
+  {
+    name: "Bourgogne Blanc", country: "France", color: "white",
+    type: "white", body: 2, sweetness: 1, tannins: 0, acidity: 2, alcohol: 2,
+    oak: "varies", grape: "Chardonnay", flavors: "Lemon, peach",
+    note: "White Burgundy — riper fruit than Chablis"
+  },
+  {
+    name: "Bourgogne Rouge", country: "France", color: "red",
+    type: "red", body: 1.5, sweetness: 1, tannins: 1, acidity: 3, alcohol: 2,
+    oak: "varies", grape: "Pinot Noir", flavors: "Raspberry, red cherry",
+    note: "Red Burgundy — light, high acidity, sometimes smoky"
+  },
+  {
+    name: "Bordeaux", country: "France", color: "red",
+    type: "red", body: 2.5, sweetness: 1, tannins: 3, acidity: 3, alcohol: 2,
+    oak: "oaked", grape: "Cabernet Sauvignon & Merlot", flavors: "Blackberry, blackcurrant, cedar",
+    note: "Bold blend — tannic, age-worthy, cedar from oak"
   },
   {
     name: "Prosecco", country: "Italy", color: "sparkling",
     type: "sparkling", body: 1, sweetness: 1.5, tannins: 0, acidity: 2, alcohol: 2,
-    oak: "unoaked", flavors: "Pear, floral aromas",
+    oak: "unoaked", grape: "Glera", flavors: "Pear, floral aromas",
     note: "Italy's bubbly — light, floral, crowd-pleaser"
   },
   {
     name: "Chianti", country: "Italy", color: "red",
     type: "red", body: 2, sweetness: 1, tannins: 3, acidity: 3, alcohol: 2,
-    oak: "oaked", flavors: "Red cherry, red plum, clove",
+    oak: "oaked", grape: "Sangiovese", flavors: "Red cherry, red plum, clove",
     note: "High tannin + high acidity = classic Italian food wine"
   },
   {
     name: "Cava", country: "Spain", color: "sparkling",
     type: "sparkling", body: 1, sweetness: 1, tannins: 0, acidity: 2, alcohol: 2,
-    oak: "unoaked", flavors: "Apple, lemon",
+    oak: "unoaked", grape: "Macabeo, Parellada, Xarel·lo", flavors: "Apple, lemon",
     note: "Spain's sparkling — crisp, citrusy"
   },
   {
     name: "Rioja", country: "Spain", color: "red",
     type: "red", body: 2.5, sweetness: 1, tannins: 2, acidity: 2, alcohol: 2,
-    oak: "oaked", flavors: "Strawberry, vanilla",
+    oak: "oaked", grape: "Tempranillo", flavors: "Strawberry, vanilla",
     note: "Spain's signature red — strawberry + vanilla"
   },
   {
     name: "Sherry", country: "Spain", color: "white",
     type: "fortified", body: 2, sweetness: 2, tannins: 0, acidity: 2, alcohol: 3,
-    oak: "oaked", flavors: "Varies by style",
+    oak: "oaked", grape: "Palomino", flavors: "Varies by style",
     note: "Fortified + versatile — comes in every sweetness level"
   },
   {
     name: "Port", country: "Portugal", color: "red",
     type: "fortified", body: 3, sweetness: 3, tannins: 3, acidity: 2, alcohol: 3,
-    oak: "oaked", flavors: "Blackberry",
+    oak: "oaked", grape: "Touriga Nacional blend", flavors: "Blackberry",
     note: "Sweet, strong, dark — the dessert powerhouse"
   },
   {
     name: "White Zinfandel", country: "California", color: "rose",
     type: "rose", body: 1, sweetness: 2, tannins: 0, acidity: 2, alcohol: 1,
-    oak: "unoaked", flavors: "Strawberry, raspberry",
+    oak: "unoaked", grape: "Zinfandel", flavors: "Strawberry, raspberry",
     note: "Not white — it's a rosé! Low alcohol, fruity"
   }
 ];
@@ -956,7 +992,7 @@ function updateExplorer() {
       <div class="wine-card-result ${isMatch ? '' : 'dimmed'}">
         ${scoreBadge}
         <div class="wine-name">${colorDot(w.type)} ${w.name}</div>
-        <div class="wine-country">${w.country}</div>
+        <div class="wine-country">${w.country}${w.grape ? ' · ' + w.grape : ''}</div>
         <div class="wine-attrs">
           ${tags.map(t => `<span class="wine-tag ${t.match ? 'match' : ''}">${t.label}</span>`).join('')}
         </div>
@@ -1002,6 +1038,7 @@ function renderCard() {
     <h3>${w.name}</h3>
     <table>
       <tr><td>Country</td><td>${w.country}</td></tr>
+      ${w.grape ? `<tr><td>Grape</td><td>${w.grape}</td></tr>` : ''}
       <tr><td>Type</td><td>${colorDot(w.type)} ${typeLabel}</td></tr>
       <tr><td>Body</td><td>${bodyLabels[Math.round(w.body)]}</td></tr>
       <tr><td>Sweetness</td><td>${sweetnessLabels[Math.round(w.sweetness)]}</td></tr>
@@ -1060,6 +1097,16 @@ function generateQuestions() {
       options: shuffle(['Light', 'Medium', 'Full'].filter(b => b !== bodyLabels[Math.round(w.body)])).concat(bodyLabels[Math.round(w.body)]),
       explanation: `${w.name} has a ${bodyLabels[Math.round(w.body)].toLowerCase()} body.`
     });
+
+    if (w.grape) {
+      const otherGrapes = [...new Set(wines.filter(x => x.grape && x.grape !== w.grape).map(x => x.grape))];
+      pool.push({
+        q: `Which grape variety is ${w.name} made from?`,
+        correct: w.grape,
+        options: shuffle(otherGrapes).slice(0, 3).concat(w.grape),
+        explanation: `${w.name} is made from ${w.grape}.`
+      });
+    }
   });
 
   quizQuestions = shuffle(pool).slice(0, 10);
@@ -1168,6 +1215,7 @@ function renderCheatSheet() {
       ${rows.map(w => `<tr>
         <td>${colorDot(w.type)} ${w.name}</td>
         <td>${w.country}</td>
+        <td>${w.grape || '—'}</td>
         <td>${bodyLabels[Math.round(w.body)]}</td>
         <td>${sweetnessLabels[Math.round(w.sweetness)]}</td>
         <td>${oakLabel(w.oak)}</td>
@@ -1176,7 +1224,7 @@ function renderCheatSheet() {
       </tr>`).join('')}`;
   }
 
-  const headers = ['Wine', 'Country', 'Body', 'Sweetness', 'Oak', 'Key Flavors', 'Remember'];
+  const headers = ['Wine', 'Country', 'Grape', 'Body', 'Sweetness', 'Oak', 'Key Flavors', 'Remember'];
   makeTable('redTable', reds, headers);
   makeTable('sparklingTable', sparkling, headers);
   makeTable('fortifiedTable', fortified, headers);
