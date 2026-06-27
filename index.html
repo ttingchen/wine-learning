@@ -642,6 +642,128 @@
   .dot-white { background: var(--wine-white); }
   .dot-rose { background: var(--wine-rose); }
   .dot-sparkling { background: linear-gradient(135deg, var(--wine-white), #fff); border: 1px solid #ccc; }
+
+  /* ── Grapes ── */
+  .grapes-intro {
+    color: #6b5444;
+    font-size: 0.95rem;
+    margin-bottom: 1.5rem;
+    line-height: 1.5;
+    max-width: 750px;
+  }
+
+  .grape-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(360px, 100%), 1fr));
+    gap: 1.5rem;
+  }
+
+  .grape-card {
+    background: white;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+    border-top: 5px solid var(--wine-red);
+  }
+
+  .grape-card-head {
+    background: linear-gradient(135deg, var(--wine-dark), var(--wine-red));
+    color: var(--wine-light);
+    padding: 1.2rem 1.4rem;
+  }
+
+  .grape-card-head h3 { font-size: 1.4rem; margin-bottom: 0.15rem; }
+  .grape-card-head .grape-aka { font-size: 0.82rem; opacity: 0.75; font-style: italic; }
+
+  .grape-card-body { padding: 1.4rem; }
+
+  .grape-bars { margin-bottom: 1.1rem; }
+
+  .grape-bar-row {
+    display: grid;
+    grid-template-columns: 70px 1fr;
+    align-items: center;
+    gap: 0.7rem;
+    margin-bottom: 0.6rem;
+  }
+
+  .grape-bar-row .bar-label {
+    font-size: 0.8rem;
+    font-weight: bold;
+    color: var(--wine-red);
+  }
+
+  .bar-track {
+    position: relative;
+    height: 10px;
+    border-radius: 5px;
+    background: var(--wine-light);
+    overflow: hidden;
+  }
+
+  .bar-fill {
+    position: absolute;
+    top: 0;
+    height: 100%;
+    background: linear-gradient(to right, var(--wine-gold), var(--wine-red));
+    border-radius: 5px;
+  }
+
+  .bar-scale {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.65rem;
+    color: #aaa;
+    margin: 0.1rem 0 0 77px;
+  }
+
+  .grape-section { margin-bottom: 0.9rem; }
+  .grape-section:last-child { margin-bottom: 0; }
+
+  .grape-section .gs-label {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #9a8472;
+    margin-bottom: 0.35rem;
+    font-weight: bold;
+  }
+
+  .grape-tags { display: flex; flex-wrap: wrap; gap: 0.35rem; }
+
+  .grape-tag {
+    font-size: 0.78rem;
+    padding: 0.22rem 0.6rem;
+    border-radius: 20px;
+    background: var(--wine-light);
+    color: var(--wine-dark);
+  }
+
+  .grape-tag.region { background: #eee3d4; }
+
+  .grape-tag.wine-link {
+    background: var(--wine-red);
+    color: white;
+    cursor: pointer;
+    border: none;
+    font-family: inherit;
+    transition: background 0.2s;
+  }
+  .grape-tag.wine-link:hover { background: var(--wine-dark); }
+
+  .grape-line { font-size: 0.88rem; color: #4a3a2e; line-height: 1.45; }
+  .grape-line strong { color: var(--wine-red); }
+
+  .grape-note {
+    margin-top: 1rem;
+    padding: 0.7rem 0.9rem;
+    background: #fdf8f0;
+    border-left: 3px solid var(--wine-gold);
+    border-radius: 0 6px 6px 0;
+    font-size: 0.85rem;
+    font-style: italic;
+    color: #5a4636;
+  }
 </style>
 </head>
 <body>
@@ -653,6 +775,7 @@
 
 <nav>
   <button class="active" onclick="showSection('explorer', this)">Wine Finder</button>
+  <button onclick="showSection('grapes', this)">Grapes</button>
   <button onclick="showSection('flashcards', this)">Flashcards</button>
   <button onclick="showSection('quiz', this)">Quiz</button>
   <button onclick="showSection('cheatsheet', this)">Cheat Sheet</button>
@@ -714,6 +837,13 @@
               <option value="unoaked">Unoaked</option>
             </select>
           </div>
+
+          <div class="slider-group">
+            <label>Grape</label>
+            <select id="grapeFilter" onchange="updateExplorer()">
+              <option value="all">All Grapes</option>
+            </select>
+          </div>
         </div>
         <button class="reset-btn" onclick="resetSliders()">Reset All</button>
       </div>
@@ -722,6 +852,12 @@
         <h3 id="resultsHeading">All Wines (13)</h3>
         <div class="wine-results" id="wineResults"></div>
       </div>
+  </div>
+
+  <!-- ═══════ GRAPES ═══════ -->
+  <div id="grapes" class="section">
+    <p class="grapes-intro">The principal grape varieties behind these wines. Each grape shows its typical <em>range</em> of structure — bars span from the lightest to fullest expression.</p>
+    <div class="grape-grid" id="grapeGrid"></div>
   </div>
 
   <!-- ═══════ FLASHCARDS ═══════ -->
@@ -900,6 +1036,46 @@ const wines = [
   }
 ];
 
+// Grape varieties (structure as [min, max] ranges on a 1–3 scale)
+const grapes = [
+  {
+    name: "Cabernet Sauvignon", aka: "Cab Sauv", match: "Cabernet Sauvignon",
+    body: [2, 3], tannin: [3, 3], acidity: [3, 3],
+    flavors: ["Blackcurrant", "Black cherry", "Green bell pepper", "Mint"],
+    oak: "Cedar, vanilla",
+    blends: ["Merlot (in Bordeaux)", "Shiraz (in Australia, adds spice)"],
+    regions: ["Bordeaux", "California", "Australia", "Chile", "South Africa"],
+    note: "High tannin means it's often blended with softer grapes for balance and body."
+  },
+  {
+    name: "Merlot", aka: "", match: "Merlot",
+    body: [3, 3], tannin: [2, 2], acidity: [2, 2],
+    flavors: ["Strawberry", "Plum", "Blackberry", "Black plum"],
+    oak: "Vanilla",
+    blends: ["Cabernet Sauvignon (adds tannin & acidity)"],
+    regions: ["Bordeaux", "Chile", "California"],
+    note: "Soft and fruity. Bordeaux is most famous for the Merlot–Cabernet Sauvignon blend."
+  },
+  {
+    name: "Pinot Noir", aka: "", match: "Pinot Noir",
+    body: [1, 2], tannin: [1, 2], acidity: [3, 3],
+    flavors: ["Strawberry", "Red cherry", "Raspberry"],
+    oak: "Vanilla, smoke",
+    blends: ["Rarely blended as a red", "Chardonnay (in Champagne)"],
+    regions: ["Burgundy", "New Zealand"],
+    note: "The principal — and only — grape in red Burgundy. Seldom blended when making red wine."
+  },
+  {
+    name: "Syrah / Shiraz", aka: "Syrah in France · Shiraz in Australia", match: "Syrah",
+    body: [2, 3], tannin: [2, 3], acidity: [2, 2],
+    flavors: ["Blackberry", "Black cherry", "Black pepper", "Licorice"],
+    oak: "Vanilla, coconut",
+    blends: ["Cabernet Sauvignon (in Australia)"],
+    regions: ["Northern Rhône", "Australia"],
+    note: "Northern Rhône → medium-bodied, fresh blackberry & pepper. Warm Australia → full-bodied, jammy & licorice."
+  }
+];
+
 const levelLabels = { 0: "Any", 1: "Low", 2: "Medium", 3: "High" };
 const sweetnessLabels = { 0: "Any", 1: "Dry", 2: "Medium", 3: "Sweet" };
 const bodyLabels = { 0: "Any", 1: "Light", 2: "Medium", 3: "Full" };
@@ -918,6 +1094,7 @@ function updateExplorer() {
   const al = +document.getElementById('alcohol').value;
   const typeF = document.getElementById('typeFilter').value;
   const oakF = document.getElementById('oakFilter').value;
+  const grapeF = document.getElementById('grapeFilter').value;
 
   document.getElementById('sweetnessVal').textContent = sweetnessLabels[s];
   document.getElementById('bodyVal').textContent = bodyLabels[b];
@@ -932,12 +1109,16 @@ function updateExplorer() {
     let totalChecked = 0;
     let typeMatch = true;
     let oakMatch = true;
+    let grapeMatch = true;
 
     if (typeF !== 'all') {
       typeMatch = w.type === typeF;
     }
     if (oakF !== 'all') {
       oakMatch = w.oak === oakF || w.oak === 'varies';
+    }
+    if (grapeF !== 'all') {
+      grapeMatch = !!w.grape && w.grape.toLowerCase().includes(grapeF.toLowerCase());
     }
 
     if (s > 0) { totalChecked++; if (Math.abs(w.sweetness - s) <= 0.5) matchCount++; }
@@ -947,7 +1128,7 @@ function updateExplorer() {
     if (al > 0) { totalChecked++; if (Math.abs(w.alcohol - al) <= 0.5) matchCount++; }
 
     const score = totalChecked > 0 ? matchCount / totalChecked : 1;
-    return { ...w, score, matchCount, totalChecked, typeMatch, oakMatch };
+    return { ...w, score, matchCount, totalChecked, typeMatch, oakMatch, grapeMatch };
   });
 
   scored.sort((a, b) => b.score - a.score || b.matchCount - a.matchCount);
@@ -956,7 +1137,7 @@ function updateExplorer() {
   let matchingCount = 0;
 
   container.innerHTML = scored.map(w => {
-    const filtered = !w.typeMatch || !w.oakMatch;
+    const filtered = !w.typeMatch || !w.oakMatch || !w.grapeMatch;
     if (filtered) return '';
 
     const isMatch = !anySliderSet || w.score >= 0.5;
@@ -1000,7 +1181,7 @@ function updateExplorer() {
       </div>`;
   }).join('');
 
-  const total = scored.filter(w => w.typeMatch && w.oakMatch).length;
+  const total = scored.filter(w => w.typeMatch && w.oakMatch && w.grapeMatch).length;
   document.getElementById('resultsHeading').textContent =
     anySliderSet ? `${matchingCount} match${matchingCount !== 1 ? 'es' : ''} of ${total} wines` : `All Wines (${total})`;
 }
@@ -1009,6 +1190,7 @@ function resetSliders() {
   ['sweetness','body','tannins','acidity','alcohol'].forEach(id => document.getElementById(id).value = 0);
   document.getElementById('typeFilter').value = 'all';
   document.getElementById('oakFilter').value = 'all';
+  document.getElementById('grapeFilter').value = 'all';
   updateExplorer();
 }
 
@@ -1107,6 +1289,48 @@ function generateQuestions() {
         explanation: `${w.name} is made from ${w.grape}.`
       });
     }
+  });
+
+  // Grape-characteristic questions
+  const rangeLabel = r => r[0] === r[1] ? levelLabels[r[0]] : `${levelLabels[r[0]]}–${levelLabels[r[1]]}`;
+  const bodyRangeLabel = r => r[0] === r[1] ? bodyLabels[r[0]] : `${bodyLabels[r[0]]}–${bodyLabels[r[1]]}`;
+  grapes.forEach(g => {
+    const others = grapes.filter(x => x.name !== g.name).map(x => x.name);
+
+    pool.push({
+      q: `Which grape has these flavors: ${g.flavors.slice(0, 3).join(', ')}?`,
+      correct: g.name,
+      options: shuffle(others).slice(0, 3).concat(g.name),
+      explanation: `${g.name} shows ${g.flavors.join(', ').toLowerCase()}.`
+    });
+
+    pool.push({
+      q: `What is the typical tannin level of ${g.name}?`,
+      correct: rangeLabel(g.tannin),
+      options: shuffle(['Low', 'Medium', 'High', 'Low–Medium', 'Medium–High'].filter(x => x !== rangeLabel(g.tannin))).slice(0, 3).concat(rangeLabel(g.tannin)),
+      explanation: `${g.name} has ${rangeLabel(g.tannin).toLowerCase()} tannins.`
+    });
+
+    pool.push({
+      q: `What body does ${g.name} typically have?`,
+      correct: bodyRangeLabel(g.body),
+      options: shuffle(['Light', 'Medium', 'Full', 'Light–Medium', 'Medium–Full'].filter(x => x !== bodyRangeLabel(g.body))).slice(0, 3).concat(bodyRangeLabel(g.body)),
+      explanation: `${g.name} is typically ${bodyRangeLabel(g.body).toLowerCase()}-bodied.`
+    });
+  });
+
+  pool.push({
+    q: `Which grape is called "Syrah" in France and "Shiraz" in Australia?`,
+    correct: "Syrah / Shiraz",
+    options: ["Cabernet Sauvignon", "Merlot", "Pinot Noir", "Syrah / Shiraz"],
+    explanation: `Syrah (France) and Shiraz (Australia) are the same grape.`
+  });
+
+  pool.push({
+    q: `Which grape is the only one used to make red Burgundy?`,
+    correct: "Pinot Noir",
+    options: ["Cabernet Sauvignon", "Merlot", "Pinot Noir", "Syrah / Shiraz"],
+    explanation: `Pinot Noir is the principal and only grape in red Burgundy.`
   });
 
   quizQuestions = shuffle(pool).slice(0, 10);
@@ -1231,6 +1455,84 @@ function renderCheatSheet() {
   makeTable('otherTable', other, headers);
 }
 
+// ── Grapes ──
+function bar(range, scale) {
+  // range = [min, max] on 1–3; render filled segment across a 3-step track
+  const pct = v => ((v - 1) / 2) * 100;
+  const left = pct(range[0]);
+  const width = Math.max(pct(range[1]) - pct(range[0]), 8);
+  return `
+    <div class="grape-bar-row">
+      <span class="bar-label">${scale.title}</span>
+      <div class="bar-track"><div class="bar-fill" style="left:${left}%;width:${width}%"></div></div>
+    </div>
+    <div class="bar-scale"><span>${scale.lo}</span><span>${scale.mid}</span><span>${scale.hi}</span></div>`;
+}
+
+function renderGrapes() {
+  document.getElementById('grapeGrid').innerHTML = grapes.map(g => {
+    const wineList = wines.filter(w => w.grape && w.grape.includes(g.match));
+    return `
+    <div class="grape-card">
+      <div class="grape-card-head">
+        <h3>${g.name}</h3>
+        ${g.aka ? `<div class="grape-aka">${g.aka}</div>` : ''}
+      </div>
+      <div class="grape-card-body">
+        <div class="grape-bars">
+          ${bar(g.body, {title: 'Body', lo: 'Light', mid: 'Medium', hi: 'Full'})}
+          ${bar(g.tannin, {title: 'Tannin', lo: 'Low', mid: 'Medium', hi: 'High'})}
+          ${bar(g.acidity, {title: 'Acidity', lo: 'Low', mid: 'Medium', hi: 'High'})}
+        </div>
+
+        <div class="grape-section">
+          <div class="gs-label">Flavors</div>
+          <div class="grape-tags">${g.flavors.map(f => `<span class="grape-tag">${f}</span>`).join('')}</div>
+        </div>
+
+        <div class="grape-section">
+          <div class="gs-label">Oak adds</div>
+          <div class="grape-line">${g.oak}</div>
+        </div>
+
+        <div class="grape-section">
+          <div class="gs-label">Often blended with</div>
+          <div class="grape-line">${g.blends.join(' · ')}</div>
+        </div>
+
+        <div class="grape-section">
+          <div class="gs-label">Grown in</div>
+          <div class="grape-tags">${g.regions.map(r => `<span class="grape-tag region">${r}</span>`).join('')}</div>
+        </div>
+
+        ${wineList.length ? `
+        <div class="grape-section">
+          <div class="gs-label">Wines in this guide</div>
+          <div class="grape-tags">${wineList.map(w => `<button class="grape-tag wine-link" onclick="filterByGrape('${g.match}')">${w.name} →</button>`).join('')}</div>
+        </div>` : ''}
+
+        <div class="grape-note">${g.note}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function filterByGrape(grapeMatch) {
+  document.getElementById('grapeFilter').value = grapeMatch;
+  updateExplorer();
+  const btn = document.querySelector('nav button');
+  showSection('explorer', btn);
+  window.scrollTo(0, 0);
+}
+
+function populateGrapeFilter() {
+  const candidates = ['Chardonnay', 'Pinot Noir', 'Cabernet Sauvignon', 'Merlot', 'Sauvignon Blanc', 'Syrah', 'Grenache', 'Sangiovese', 'Tempranillo', 'Gamay', 'Zinfandel', 'Glera'];
+  const present = candidates.filter(c => wines.some(w => w.grape && w.grape.includes(c)));
+  const sel = document.getElementById('grapeFilter');
+  sel.innerHTML = '<option value="all">All Grapes</option>' +
+    present.map(c => `<option value="${c}">${c}</option>`).join('');
+}
+
 // ── Navigation ──
 function showSection(id, btn) {
   document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
@@ -1245,9 +1547,11 @@ function showSection(id, btn) {
 }
 
 // ── Init ──
+populateGrapeFilter();
 updateExplorer();
 renderCard();
 renderCheatSheet();
+renderGrapes();
 </script>
 
 </body>
