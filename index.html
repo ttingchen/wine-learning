@@ -1642,8 +1642,10 @@ function renderCheatSheet() {
 function bar(range, scale) {
   // range = [min, max] on 1–3; render filled segment across a 3-step track
   const pct = v => ((v - 1) / 2) * 100;
-  const left = pct(range[0]);
-  const width = Math.max(pct(range[1]) - pct(range[0]), 8);
+  let left = pct(range[0]);
+  let width = Math.max(pct(range[1]) - pct(range[0]), 8);
+  // Keep the fill inside the track (a value pinned at the max would otherwise overflow off the right edge)
+  if (left + width > 100) left = 100 - width;
   return `
     <div class="grape-bar-row">
       <span class="bar-label">${scale.title}</span>
