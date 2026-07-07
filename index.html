@@ -768,14 +768,33 @@
     border-top: 5px solid var(--wine-red);
   }
 
+  .grape-card.grape-white { border-top-color: var(--wine-gold); }
+
   .grape-card-head {
     background: linear-gradient(135deg, var(--wine-dark), var(--wine-red));
     color: var(--wine-light);
     padding: 1.2rem 1.4rem;
   }
 
+  .grape-card.grape-white .grape-card-head {
+    background: linear-gradient(135deg, #6b5a2e, #9a7d3a);
+  }
+
   .grape-card-head h3 { font-size: 1.4rem; margin-bottom: 0.15rem; }
   .grape-card-head .grape-aka { font-size: 0.82rem; opacity: 0.75; font-style: italic; }
+
+  .grape-color-badge {
+    display: inline-block;
+    font-size: 0.66rem;
+    text-transform: uppercase;
+    letter-spacing: 0.7px;
+    font-weight: bold;
+    padding: 0.18rem 0.5rem;
+    border-radius: 20px;
+    margin-bottom: 0.5rem;
+  }
+  .grape-color-black { background: rgba(0,0,0,0.35); color: #f0d9b8; }
+  .grape-color-white { background: rgba(255,255,255,0.85); color: #6b5a2e; }
 
   .grape-card-body { padding: 1.4rem; }
 
@@ -1158,7 +1177,7 @@ const wines = [
 // Grape varieties (structure as [min, max] ranges on a 1–3 scale)
 const grapes = [
   {
-    name: "Cabernet Sauvignon", aka: "Cab Sauv", match: "Cabernet Sauvignon",
+    name: "Cabernet Sauvignon", aka: "Cab Sauv", match: "Cabernet Sauvignon", color: "black",
     body: [2, 3], tannin: [3, 3], acidity: [3, 3],
     flavors: ["Blackcurrant", "Black cherry", "Green bell pepper", "Mint"],
     oak: "Cedar, vanilla",
@@ -1167,7 +1186,7 @@ const grapes = [
     note: "High tannin means it's often blended with softer grapes for balance and body."
   },
   {
-    name: "Merlot", aka: "", match: "Merlot",
+    name: "Merlot", aka: "", match: "Merlot", color: "black",
     body: [3, 3], tannin: [2, 2], acidity: [2, 2],
     flavors: ["Strawberry", "Plum", "Blackberry", "Black plum"],
     oak: "Vanilla",
@@ -1176,7 +1195,7 @@ const grapes = [
     note: "Soft and fruity. Bordeaux is most famous for the Merlot–Cabernet Sauvignon blend."
   },
   {
-    name: "Pinot Noir", aka: "", match: "Pinot Noir",
+    name: "Pinot Noir", aka: "", match: "Pinot Noir", color: "black",
     body: [1, 2], tannin: [1, 2], acidity: [3, 3],
     flavors: ["Strawberry", "Red cherry", "Raspberry"],
     oak: "Vanilla, smoke",
@@ -1185,13 +1204,49 @@ const grapes = [
     note: "The principal — and only — grape in red Burgundy. Seldom blended when making red wine."
   },
   {
-    name: "Syrah / Shiraz", aka: "Syrah in France · Shiraz in Australia", match: "Syrah",
+    name: "Syrah / Shiraz", aka: "Syrah in France · Shiraz in Australia", match: "Syrah", color: "black",
     body: [2, 3], tannin: [2, 3], acidity: [2, 2],
     flavors: ["Blackberry", "Black cherry", "Black pepper", "Licorice"],
     oak: "Vanilla, coconut",
     blends: ["Cabernet Sauvignon (in Australia)"],
     regions: ["Northern Rhône", "Australia"],
     note: "Northern Rhône → medium-bodied, fresh blackberry & pepper. Warm Australia → full-bodied, jammy & licorice."
+  },
+  {
+    name: "Chardonnay", aka: "", match: "Chardonnay", color: "white",
+    body: [1, 3], acidity: [2, 3], sweetness: [1, 1],
+    flavors: ["Apple", "Lemon", "Peach", "Pineapple", "Banana"],
+    oak: "Vanilla (when oaked; can be oaked or unoaked)",
+    blends: ["Pinot Noir (in Champagne)"],
+    regions: ["Burgundy", "Chablis", "Australia", "California"],
+    note: "Cool climate → lean, apple & citrus, high acidity. Warm climate → riper stone & tropical fruit, fuller body."
+  },
+  {
+    name: "Sauvignon Blanc", aka: "", match: "Sauvignon Blanc", color: "white",
+    body: [1, 2], acidity: [3, 3], sweetness: [1, 1],
+    flavors: ["Apple", "Lemon", "Grapefruit", "Passion fruit", "Cut grass", "Green bell pepper"],
+    oak: "Usually unoaked (fermented in stainless steel)",
+    blends: ["Sémillon (in Bordeaux whites)"],
+    regions: ["New Zealand", "Sancerre (France)"],
+    note: "Pronounced, aromatic and refreshingly high in acidity — usually kept unoaked to preserve its character."
+  },
+  {
+    name: "Pinot Grigio", aka: "Pinot Gris", match: "Pinot Grigio", color: "white",
+    body: [1, 1], acidity: [2, 3], sweetness: [1, 1],
+    flavors: ["Pear", "Lemon"],
+    oak: "Unoaked (fermented in stainless steel)",
+    blends: ["Rarely blended"],
+    regions: ["Italy"],
+    note: "Light, dry and easy-drinking with simple pear & lemon flavors. Usually unoaked to keep it fruity."
+  },
+  {
+    name: "Riesling", aka: "", match: "Riesling", color: "white",
+    body: [1, 2], acidity: [3, 3], sweetness: [1, 3],
+    flavors: ["Apple", "Lime", "Lemon", "Peach", "Apricot", "Floral"],
+    oak: "Unoaked (fermented in stainless steel)",
+    blends: ["Rarely blended"],
+    regions: ["Germany", "Alsace (France)", "Australia"],
+    note: "Ranges from dry to sweet, but always high acidity to balance the sweetness. Classic grape of Germany; dry in Alsace & Australia."
   }
 ];
 
@@ -1423,11 +1478,20 @@ function generateQuestions() {
       explanation: `${g.name} shows ${g.flavors.join(', ').toLowerCase()}.`
     });
 
+    if (g.color === 'black') {
+      pool.push({
+        q: `What is the typical tannin level of ${g.name}?`,
+        correct: rangeLabel(g.tannin),
+        options: shuffle(['Low', 'Medium', 'High', 'Low–Medium', 'Medium–High'].filter(x => x !== rangeLabel(g.tannin))).slice(0, 3).concat(rangeLabel(g.tannin)),
+        explanation: `${g.name} has ${rangeLabel(g.tannin).toLowerCase()} tannins.`
+      });
+    }
+
     pool.push({
-      q: `What is the typical tannin level of ${g.name}?`,
-      correct: rangeLabel(g.tannin),
-      options: shuffle(['Low', 'Medium', 'High', 'Low–Medium', 'Medium–High'].filter(x => x !== rangeLabel(g.tannin))).slice(0, 3).concat(rangeLabel(g.tannin)),
-      explanation: `${g.name} has ${rangeLabel(g.tannin).toLowerCase()} tannins.`
+      q: `Is ${g.name} a white grape or a black grape?`,
+      correct: g.color === 'white' ? 'White grape' : 'Black grape',
+      options: ['White grape', 'Black grape'],
+      explanation: `${g.name} is a ${g.color} grape.`
     });
 
     pool.push({
@@ -1592,15 +1656,18 @@ function renderGrapes() {
   document.getElementById('grapeGrid').innerHTML = grapes.map(g => {
     const wineList = wines.filter(w => w.grape && w.grape.includes(g.match));
     return `
-    <div class="grape-card">
+    <div class="grape-card grape-${g.color}">
       <div class="grape-card-head">
+        <span class="grape-color-badge grape-color-${g.color}">${g.color === 'white' ? 'White grape' : 'Black grape'}</span>
         <h3>${g.name}</h3>
         ${g.aka ? `<div class="grape-aka">${g.aka}</div>` : ''}
       </div>
       <div class="grape-card-body">
         <div class="grape-bars">
           ${bar(g.body, {title: 'Body', lo: 'Light', mid: 'Medium', hi: 'Full'})}
-          ${bar(g.tannin, {title: 'Tannin', lo: 'Low', mid: 'Medium', hi: 'High'})}
+          ${g.color === 'white'
+            ? bar(g.sweetness, {title: 'Sweetness', lo: 'Dry', mid: 'Medium', hi: 'Sweet'})
+            : bar(g.tannin, {title: 'Tannin', lo: 'Low', mid: 'Medium', hi: 'High'})}
           ${bar(g.acidity, {title: 'Acidity', lo: 'Low', mid: 'Medium', hi: 'High'})}
         </div>
 
