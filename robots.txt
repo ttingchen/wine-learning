@@ -1,0 +1,5 @@
+# Allow all search engines to crawl everything
+User-agent: *
+Allow: /
+
+Sitemap: https://ttingchen.github.io/wine-learning/sitemap.xml
