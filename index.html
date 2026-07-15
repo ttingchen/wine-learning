@@ -922,6 +922,18 @@
     font-style: italic;
     color: #5a4636;
   }
+
+  .site-footer {
+    background: var(--wine-dark);
+    color: var(--wine-light);
+    text-align: center;
+    padding: 1.6rem 1.2rem;
+    font-size: 0.82rem;
+    line-height: 1.6;
+    border-top: 3px solid var(--wine-gold);
+  }
+  .site-footer a { color: var(--wine-gold); }
+  .site-footer .disclaimer { opacity: 0.75; margin-top: 0.4rem; font-style: italic; }
 </style>
 </head>
 <body>
@@ -1104,6 +1116,17 @@
     </div>
   </div>
 </main>
+
+<footer class="site-footer">
+  <div>
+    Background music generated with <a href="https://suno.com" target="_blank" rel="noopener">Suno AI</a>
+    and used under its free-plan terms for non-commercial use.
+  </div>
+  <div class="disclaimer">
+    A personal, non-commercial study project — for educational purposes only.
+    Wine descriptions are general guidance.
+  </div>
+</footer>
 
 <script>
 const wines = [
